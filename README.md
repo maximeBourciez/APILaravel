@@ -1,66 +1,177 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Création de la classe API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Controller pour l'API
 
-## About Laravel
+D'abord, nous créons le fichier du controller qui sera dédié à la gestion de l'API des clients.
+```php
+php artisan make:controller Api/ClientController
+```
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Ensuite, nous remplissons ce controller sur la base de celui qui gère les vues, en adaptant les retours faits. Par exemple :  <br>
+```path /App/Controllers/ClientController.php ```:
+```php
+public function index()
+{
+    $clients = Client::paginate(10);
+    return view('clients.index', compact('clients'));
+}
+```
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+```path /App/Controllers/Api/ClientController.php ```:
+```php
+public function index(){
+    $clients = Client::all();
+    return response()->json($clients);
+}
+```
+Dans ce cas, au lieu de retourner une vue et les données dont elle a besoin, on retourne un json contenant ces données.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+## Adaptation des routes
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Pour créer les routes dédiées à l'API, nous remplissons le fichier ```path routes/api.php``` de la façon suivante : <br>
+```php 
+use App\Http\Controllers\Api\ClientController;
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+// Création des routes pour chaque méthode du controller de l'API
+Route::get('/clients',[ClientController::class,'index']);
+Route::get('/clients/{id}',[ClientController::class,'show']);
+Route::post('/clients/store',[ClientController::class,'store']);
+Route::put('/clients/{id}',[ClientController::class,'update']);
+Route::delete('/clients/{id}',[ClientController::class,'destroy']);
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Dans ce fichier, nous créons une route par méthode du controller. Je ne suis pas sûr que les routes vers les méthodes d'ajout, de modification et de suppression soient utiles dans le cadre d'une API mais je les ai laissées au cas où.
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Test via PostMan
 
-### Premium Partners
+### Mise en place
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Pour tester via PostMan, j'ai dû télécharger l'application <i>PostMan Agent</i> afin de pouvoir faire des requêtes à mon application Laravel qui tourne sur un serveur local. Ensuite, j'ai créé une collection afin de pouvoir effectuer les requêtes.
 
-## Contributing
+### Test
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+#### Récupération des clients
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Dans la collection que j'ai créé, j'ai inséré le lien vers mon api ```(127.0.0.1:8000/api/clients) ```et j'ai constaté que j'ai un résultat qui correspond bien aux données de ma BD : 
 
-## Security Vulnerabilities
+```json 
+[
+  {
+    "numeroClient": 1,
+    "nom": "Providenci Ankunding",
+    "email": "wblock@example.com",
+    "carteBancaire": "4716397610570316",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 2,
+    "nom": "Ms. Onie Emmerich",
+    "email": "walton21@example.org",
+    "carteBancaire": "340163153387050",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 3,
+    "nom": "Miss Valerie Bednar",
+    "email": "mcclure.sid@example.net",
+    "carteBancaire": "6011801069677206",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 4,
+    "nom": "Tatyana Keebler",
+    "email": "russ.kohler@example.com",
+    "carteBancaire": "378188572934468",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 5,
+    "nom": "Jimmy Marquardt",
+    "email": "ledner.garnet@example.net",
+    "carteBancaire": "2509118499535781",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 6,
+    "nom": "Tamara Lowe Sr.",
+    "email": "morissette.jarrell@example.net",
+    "carteBancaire": "3528484232639628",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 7,
+    "nom": "Boyd Carroll Sr.",
+    "email": "zboncak.mallie@example.org",
+    "carteBancaire": "3528614960746803",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 8,
+    "nom": "Ms. Emma Gutmann Sr.",
+    "email": "grayson20@example.com",
+    "carteBancaire": "4024007100539153",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 9,
+    "nom": "Rodrigo Stiedemann V",
+    "email": "ibrahim51@example.com",
+    "carteBancaire": "5396664525389585",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+  },
+  {
+    "numeroClient": 10,
+    "nom": "Ms. Bulah Berge",
+    "email": "nader.randy@example.com",
+    "carteBancaire": "3333333333333333",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:20:57.000000Z"
+  }
+]
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+#### Récupération d'un seul client
 
-## License
+J'ai aussi testé de récupérer les infos d'un client par son id ```(127.0.0.1:8000/api/clients/2)``` :
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```json
+{
+    "numeroClient": 2,
+    "nom": "Ms. Onie Emmerich",
+    "email": "walton21@example.org",
+    "carteBancaire": "340163153387050",
+    "created_at": "2025-02-16T15:13:55.000000Z",
+    "updated_at": "2025-02-16T15:13:55.000000Z"
+}
+```
+
+
+
+#### Suppression d'un client
+POur tester cette méthode, on accède par exemple à ```http://127.0.0.1:8000/api/clients/10```. Si le client existe et est correctement supprimé, on aura : 
+```json
+{
+    "message": "Client supprimé !"
+}
+```
+
+Sinon nous aurons : 
+```json 
+{
+    "message": "Non trouvé !"
+}
+```
+
+Et si on refait une requête de récupération de tous les clients à l'API, ou même si on demande juste celui qu'on a supprimé, il n'apparaîtra plus.
